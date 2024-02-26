@@ -1,11 +1,11 @@
-import { LoginForm } from "@/components/auth/Login/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 
 
 
 const RegisterPage = () => {
     return (
         <div>
-            <LoginForm />
+            <RegisterForm />
         </div>
     );
 };
