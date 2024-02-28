@@ -3,6 +3,7 @@
 
 export const publicRotes = [
     "/",
+    "/auth/new-verification",
 ]
 
 export const authRotes= [

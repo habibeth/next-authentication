@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 
-export const getVerificationTokenByEmail = async(
+export const getVerificationTokenByToken= async(
     token: string
 )=>{
     try{
@@ -15,7 +15,7 @@ export const getVerificationTokenByEmail = async(
 }
 
 
-export const getVerificationTokenByToken = async(
+export const getVerificationTokenByEmail = async(
     email: string
 )=>{
     try{
