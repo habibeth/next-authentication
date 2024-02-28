@@ -11,28 +11,51 @@ export const {
   signIn,
   signOut
 } = NextAuth({
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await db.user.update({
+        where: { id: user.id },
+        data: {emailVerified: new Date()}
+      })
+    }
+  },
   callbacks: {
-    async session({session, token, user}) {
+    async signIn({user, account}) {
+      if(account?.provider ! === "credentials") return true;
+      const existingUser = await getUserById(user?.id);
+
+      if(!existingUser?.emailVerified) return false;
+
+
+      return true;
+    },
+
+
+    async session({ session, token, user }) {
       // console.log({
       //   sessionToken: token,
       // })
 
-      if(token.sub && session.user){
+      if (token.sub && session.user) {
         session.user.id = token.sub;
       }
 
-      if(token.role && session.user){
+      if (token.role && session.user) {
         session.user.role = token.role;
       }
 
       return session;
     },
-    async jwt({token}){
-      if(!token.sub) return token;
+    async jwt({ token }) {
+      if (!token.sub) return token;
 
       const existingUser = await getUserById(token.sub);
 
-      if(!existingUser) return token;
+      if (!existingUser) return token;
 
       token.role = existingUser.role;
 
@@ -40,6 +63,6 @@ export const {
     }
   },
   adapter: PrismaAdapter(db),
-  session: {strategy: "jwt"},
+  session: { strategy: "jwt" },
   ...authConfig
 })
