@@ -15,6 +15,7 @@ const NewVerificationForm = () => {
     const token = searchParams.get("token");
 
     const onSubmit = useCallback(() => {
+        if(success || error) return;
         if (!token) {
             setError("Missing Token!");
             return;
@@ -27,7 +28,7 @@ const NewVerificationForm = () => {
             .catch(() => {
                 setError("Something went to Wrong!")
             })
-    }, [token])
+    }, [token, error, success])
 
     useEffect(() => {
         onSubmit()
@@ -42,7 +43,7 @@ const NewVerificationForm = () => {
                 {!error && !success && <BeatLoader />}
                 <div className="mt-5">
                     <FormSuccess message={success} />
-                    <FormError message={error} />
+                    {!success && <FormError message={error} />}
                 </div>
             </div>
         </CardWrapper>
