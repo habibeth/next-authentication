@@ -1,18 +1,90 @@
-import { auth, signOut } from "@/auth";
+"use client"
 
-const SettingsPage = async () => {
-    const session = await auth();
+
+import * as z from "zod"
+import { settings } from '@/action/settings';
+import {
+    Card,
+    CardContent,
+    CardHeader
+
+} from '@/components/ui/card'
+import { useSession } from 'next-auth/react';
+import { useState, useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { SettingsSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hook/use-current-user";
+
+const SettingsPage = () => {
+    const user = useCurrentUser()
+    const [error, setError] = useState<string | undefined>()
+    const [success, setSuccess] = useState<string | undefined>()
+    const { update } = useSession()
+    const [isPending, startTransition] = useTransition();
+
+    const form = useForm<z.infer<typeof SettingsSchema>>({
+        resolver: zodResolver(SettingsSchema),
+        defaultValues: {
+            name: user?.name || undefined,
+        }
+    });
+
+    const onSubmit = (values: z.infer<typeof SettingsSchema>) => {
+        startTransition(() => {
+            settings(values)
+                .then((data) => {
+                    if (data.error) {
+                        setError(data.error)
+                    }
+
+                    if (data.success) {
+                        update();
+                        setSuccess(data.success)
+                    }
+                })
+
+                .catch(() => {
+                    setError("Something went wrong!")
+                })
+        })
+    }
     return (
-        <div>
-            {JSON.stringify(session)}
-            <form action={async ()=>{
-                "use server";
-
-                await signOut();
-            }}>
-                <button type="submit">Sign Out</button>
-            </form>
-        </div>
+        <Card className='w-[600px]'>
+            <CardHeader>
+                <p className='text-2xl font-semibold text-center'>
+                    ⚙️ Settings
+                </p>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <Input
+                                            {...field}
+                                            placeholder="Jon Doe"
+                                            disabled={isPending}
+                                        />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <Button disabled={isPending} type="submit">
+                            Save
+                        </Button>
+                    </form>
+                </Form>
+            </CardContent>
+        </Card>
     );
 };
 

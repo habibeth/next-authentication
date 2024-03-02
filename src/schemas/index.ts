@@ -2,6 +2,11 @@ import * as z from "zod";
 
 
 
+export const SettingsSchema = z.object({
+    name: z.optional(z.string())
+});
+
+
 export const NewPasswordSchema = z.object({
     password: z.string().min(6,{
         message: "Password Must Be 6 Character of Longer"
@@ -22,7 +27,8 @@ export const LoginSchema = z.object({
     }),
     password: z.string().min(1,{
         message: "Password is Required"
-    })
+    }),
+    code: z.optional(z.string())
 });
 
 
