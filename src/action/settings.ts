@@ -7,6 +7,8 @@ import * as z from "zod"
 import { db } from "@/lib/db"
 import { generateVerificationToken } from "@/lib/tokens"
 import { sendVerificationEmail } from "@/lib/mail"
+import { unstable_update } from "@/auth"
+// import { update } from "@/auth"
 
 export const settings = async (
     values: z.infer<typeof SettingsSchema>
@@ -63,12 +65,32 @@ export const settings = async (
 
     }
 
-    await db.user.update({
+    const updatedUser = await db.user.update({
         where: { id: dbUser.id },
         data: {
             ...values
         }
     })
+
+    unstable_update(
+        {
+            user: {
+                name: updatedUser.name,
+                email: updatedUser.email,
+                isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
+                role: updatedUser.role,
+            }
+        }
+    )
+
+    // update({
+    //     user: {
+    //         name: updatedUser.name,
+    //         email: updatedUser.email,
+    //         isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
+    //         role: updatedUser.role,
+    //     }
+    // })
 
     return { success: "Settings Updated!" }
 }
